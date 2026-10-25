@@ -1,14 +1,19 @@
 <script setup>
 import HelloWorld from './components/HelloWorld.vue'
 import TheWelcome from './components/TheWelcome.vue'
+import Counter from './components/Counter.vue'
 </script>
 
 <template>
   <header>
-    <img alt="Vue logo" class="logo" src="./assets/logo.svg" width="125" height="125" />
+    <div class="plogo">
+      <img alt="Vue logo" class="logo" src="./assets/logo.svg" width="125" height="125" />
+      <Counter />
+    </div>
+    
 
     <div class="wrapper">
-      <HelloWorld msg="You did it!" />
+      <HelloWorld msg="真的成了！" name="测试名"/>
     </div>
   </header>
 
@@ -24,6 +29,10 @@ header {
 
 .logo {
   display: block;
+  margin: 0 auto;
+}
+.plogo {
+  display: block;
   margin: 0 auto 2rem;
 }
 
@@ -34,7 +43,7 @@ header {
     padding-right: calc(var(--section-gap) / 2);
   }
 
-  .logo {
+  .plogo {
     margin: 0 2rem 0 0;
   }
 
