@@ -1,0 +1,87 @@
+/* ============================================================
+   设计令牌（Design Tokens）
+   所有颜色、间距、圆角、阴影、字体的唯一来源。
+   组件里只允许使用 var(--xxx)，不写死具体数值，便于统一换肤。
+   ============================================================ */
+:root {
+  /* color-scheme 让原生控件（滚动条、输入框）跟随明暗主题 */
+  color-scheme: light dark;
+
+  /* 背景与表面：用层次（bg < surface-muted < surface）表达层级 */
+  --bg: #f5f6f8;
+  --surface: #ffffff;
+  --surface-muted: #f0f2f5;
+  --surface-hover: #e9edf2;
+
+  /* 文字与边框 */
+  --text: #1f2933;
+  --text-muted: #667085;
+  --text-inverse: #ffffff;
+  --border: #e1e5ea;
+  --border-strong: #c9d0d8;
+
+  /* 品牌色与语义色：语义色只表达含义（危险/警告/成功），不绑定具体用途 */
+  --primary: #2f6fed;
+  --primary-hover: #1f5ad0;
+  --primary-soft: rgba(47, 111, 237, 0.12);
+  --danger: #d92d20;
+  --danger-soft: rgba(217, 45, 32, 0.12);
+  --warning: #b54708;
+  --success: #067647;
+
+  /* 优先级色与语义色刻意分开：以后调优先级配色不会影响错误提示 */
+  --priority-high: #d92d20;
+  --priority-medium: #b54708;
+  --priority-low: #475467;
+
+  /* 圆角与间距：4 的倍数，保证节奏一致 */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+
+  /* 阴影与动效 */
+  --shadow-sm: 0 1px 2px rgba(16, 24, 40, 0.06);
+  --shadow-md: 0 4px 12px rgba(16, 24, 40, 0.1);
+  --shadow-lg: 0 12px 32px rgba(16, 24, 40, 0.16);
+  --duration: 150ms;
+  --easing: ease;
+
+  /* 字体 */
+  --font-sans: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+    'Helvetica Neue', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  --font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
+}
+
+/* 暗色模式只重写“颜色”类令牌，尺寸、字体、动效保持不变 */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0f1115;
+    --surface: #171a21;
+    --surface-muted: #1e222a;
+    --surface-hover: #262b34;
+    --text: #e6e8ec;
+    --text-muted: #9aa3b2;
+    --text-inverse: #0f1115;
+    --border: #2a2f3a;
+    --border-strong: #3a4150;
+    --primary: #5b8def;
+    --primary-hover: #79a3f5;
+    --primary-soft: rgba(91, 141, 239, 0.18);
+    --danger: #f97066;
+    --danger-soft: rgba(249, 112, 102, 0.16);
+    --warning: #f79009;
+    --success: #47cd89;
+    --priority-high: #f97066;
+    --priority-medium: #f79009;
+    --priority-low: #98a2b3;
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
+    --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.6);
+  }
+}
