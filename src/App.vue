@@ -1,10 +1,8 @@
 ﻿<script setup>
-// S1：只搭骨架，数据与交互在后续步骤接入
-const columns = [
-  { status: 'todo', title: '待办' },
-  { status: 'doing', title: '进行中' },
-  { status: 'done', title: '已完成' },
-]
+import { STATUSES } from './domain/task.js'
+
+// 列定义来自 domain，避免状态值/标题在两处重复
+const columns = STATUSES
 </script>
 
 <template>
@@ -18,9 +16,9 @@ const columns = [
     </header>
 
     <main class="board">
-      <section v-for="column in columns" :key="column.status" class="column">
+      <section v-for="column in columns" :key="column.value" class="column">
         <header class="column-header">
-          <h2 class="column-title">{{ column.title }}</h2>
+          <h2 class="column-title">{{ column.label }}</h2>
           <span class="column-count">0</span>
         </header>
         <p class="column-empty">暂无任务</p>
