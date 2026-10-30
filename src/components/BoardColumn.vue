@@ -1,4 +1,6 @@
 ﻿<script setup>
+import TaskCard from './TaskCard.vue'
+
 defineProps({
   // 列数据由父组件组装：{ value, label, tasks }
   column: {
@@ -18,8 +20,8 @@ defineProps({
     </header>
 
     <ul v-if="column.tasks.length > 0" class="task-list">
-      <li v-for="task in column.tasks" :key="task.id" class="task-placeholder">
-        {{ task.title }}
+      <li v-for="task in column.tasks" :key="task.id" class="task-item">
+        <TaskCard :task="task" />
       </li>
     </ul>
     <p v-else class="column-empty">暂无任务</p>
@@ -61,15 +63,6 @@ defineProps({
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
-}
-
-/* S8 的占位卡片，S9 会被 TaskCard 组件替换 */
-.task-placeholder {
-  padding: var(--space-3);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  background: var(--surface);
-  font-size: 14px;
 }
 
 .column-empty {
