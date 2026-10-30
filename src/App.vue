@@ -1,8 +1,9 @@
 ﻿<script setup>
-import { STATUSES } from './domain/task.js'
+import BoardColumn from './components/BoardColumn.vue'
+import { useBoard } from './composables/useBoard.js'
 
-// 列定义来自 domain，避免状态值/标题在两处重复
-const columns = STATUSES
+// 状态层只在这里创建一次，向下通过 props 传递
+const { columns, stats } = useBoard()
 </script>
 
 <template>
@@ -10,19 +11,17 @@ const columns = STATUSES
     <header class="app-header">
       <div>
         <h1 class="app-title">任务看板</h1>
-        <p class="app-subtitle">用三列管理任务的流转</p>
+        <p class="app-subtitle">
+          共 {{ stats.total }} 个任务
+          <span v-if="stats.total > 0"> · 完成率 {{ stats.completionRate }}%</span>
+          <span v-if="stats.overdue > 0"> · 逾期 {{ stats.overdue }}</span>
+        </p>
       </div>
       <button class="btn-create" type="button">新建任务</button>
     </header>
 
     <main class="board">
-      <section v-for="column in columns" :key="column.value" class="column">
-        <header class="column-header">
-          <h2 class="column-title">{{ column.label }}</h2>
-          <span class="column-count">0</span>
-        </header>
-        <p class="column-empty">暂无任务</p>
-      </section>
+      <BoardColumn v-for="column in columns" :key="column.value" :column="column" />
     </main>
   </div>
 </template>
@@ -76,45 +75,6 @@ const columns = STATUSES
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: var(--space-4);
   align-items: start;
-}
-
-.column {
-  min-height: 240px;
-  padding: var(--space-3);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  background: var(--surface-muted);
-}
-
-.column-header {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  padding: 0 var(--space-1) var(--space-3);
-}
-
-.column-title {
-  font-size: 15px;
-  font-weight: 600;
-}
-
-.column-count {
-  min-width: 20px;
-  padding: 0 6px;
-  border-radius: 999px;
-  background: var(--surface);
-  color: var(--text-muted);
-  font-size: 12px;
-  text-align: center;
-}
-
-.column-empty {
-  padding: var(--space-4);
-  border: 1px dashed var(--border-strong);
-  border-radius: var(--radius-md);
-  color: var(--text-muted);
-  font-size: 13px;
-  text-align: center;
 }
 
 @media (max-width: 1023px) {
