@@ -1,17 +1,20 @@
 ﻿<script setup>
 import { computed, nextTick, onMounted, onUnmounted, provide, ref, watch } from 'vue'
 import BoardColumn from './components/BoardColumn.vue'
+import BoardToolbar from './components/BoardToolbar.vue'
 import ConfirmDialog from './components/ConfirmDialog.vue'
 import TaskFormDialog from './components/TaskFormDialog.vue'
 import ToastHost from './components/ToastHost.vue'
-import { STATUS_LABELS, STATUS_VALUES } from './domain/task.js'
+import { STATUS_LABELS } from './domain/task.js'
 import { useBoard } from './composables/useBoard.js'
-import { DRAG_KEY, toMoveIndex, useDragDrop } from './composables/useDragDrop.js'
+import { DRAG_KEY, useDragDrop } from './composables/useDragDrop.js'
+import { useKeyboardMove } from './composables/useKeyboardMove.js'
 import { useToast } from './composables/useToast.js'
 
 const {
   columns,
   stats,
+  filter,
   filterActive,
   loadStatus,
   saveStatus,
@@ -19,6 +22,10 @@ const {
   updateTask,
   removeTask,
   moveTask,
+  setKeyword,
+  togglePriority,
+  setDue,
+  clearFilter,
 } = useBoard()
 
 const { toasts, push: pushToast, dismiss: dismissToast } = useToast()
@@ -39,40 +46,7 @@ const drag = useDragDrop({
 })
 provide(DRAG_KEY, drag)
 
-function focusTask(id) {
-  // 卡片换列后会重新挂载，等 DOM 稳定再把焦点还回去
-  nextTick(() => {
-    document.querySelector('[data-task-id="' + id + '"]')?.focus()
-  })
-}
-
-// 键盘移动：左右换列、上下换序，坐标换算复用 toMoveIndex
-function handleKeyboardMove({ id, direction }) {
-  const from = columns.value.find((column) => column.tasks.some((task) => task.id === id))
-  if (!from) return
-
-  const fromIndex = from.tasks.findIndex((task) => task.id === id)
-
-  if (direction === 'up' || direction === 'down') {
-    if (direction === 'up' && fromIndex === 0) return
-    if (direction === 'down' && fromIndex === from.tasks.length - 1) return
-
-    const slot = direction === 'up' ? fromIndex - 1 : fromIndex + 2
-    moveTask(id, from.value, toMoveIndex(fromIndex, slot))
-    pushToast('顺序已调整')
-    focusTask(id)
-    return
-  }
-
-  const currentIndex = STATUS_VALUES.indexOf(from.value)
-  const nextStatus = STATUS_VALUES[currentIndex + (direction === 'left' ? -1 : 1)]
-  if (!nextStatus) return
-
-  const targetColumn = columns.value.find((column) => column.value === nextStatus)
-  moveTask(id, nextStatus, targetColumn ? targetColumn.tasks.length : 0)
-  pushToast('已移动到「' + STATUS_LABELS[nextStatus] + '」')
-  focusTask(id)
-}
+const { handleMove } = useKeyboardMove({ columns, moveTask, notify: pushToast })
 
 function openCreate() {
   editingTask.value = null
@@ -164,6 +138,15 @@ watch(saveStatus, (status) => {
       <button class="btn-create" type="button" @click="openCreate">新建任务</button>
     </header>
 
+    <BoardToolbar
+      :filter="filter"
+      :active="filterActive"
+      @keyword="setKeyword"
+      @toggle-priority="togglePriority"
+      @due="setDue"
+      @clear="clearFilter"
+    />
+
     <main class="board">
       <BoardColumn
         v-for="column in columns"
@@ -172,7 +155,7 @@ watch(saveStatus, (status) => {
         :draggable="!filterActive"
         @edit="openEdit"
         @remove="askDelete"
-        @move="handleKeyboardMove"
+        @move="handleMove"
       />
     </main>
 
