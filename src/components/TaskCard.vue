@@ -1,6 +1,12 @@
 ﻿<script setup>
 import { computed } from 'vue'
-import { PRIORITY_LABELS, formatDate, isOverdue, toISODate } from '../domain/task.js'
+import {
+  PRIORITY_LABELS,
+  STATUSES,
+  formatDate,
+  isOverdue,
+  toISODate,
+} from '../domain/task.js'
 
 const props = defineProps({
   task: {
@@ -9,8 +15,8 @@ const props = defineProps({
   },
 })
 
-// 只发事件、不直接改数据：删除/编辑由父级决定怎么处理
-defineEmits(['edit', 'remove'])
+// 只发事件、不直接改数据：删除/编辑/移动由父级决定怎么处理
+defineEmits(['edit', 'remove', 'status'])
 
 const priorityLabel = computed(() => PRIORITY_LABELS[props.task.priority] ?? props.task.priority)
 const isDone = computed(() => props.task.status === 'done')
@@ -56,133 +62,19 @@ const completedText = computed(() =>
       >
         删除
       </button>
+      <select
+        class="move"
+        title="移动到"
+        :value="task.status"
+        :aria-label="'移动任务：' + task.title"
+        @change="$emit('status', $event.target.value)"
+      >
+        <option v-for="item in STATUSES" :key="item.value" :value="item.value">
+          {{ item.label }}
+        </option>
+      </select>
     </footer>
   </article>
 </template>
 
-<style scoped>
-.task-card {
-  padding: var(--space-3);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  background: var(--surface);
-  box-shadow: var(--shadow-sm);
-  transition:
-    box-shadow var(--duration) var(--easing),
-    border-color var(--duration) var(--easing);
-}
-
-.task-card:hover {
-  border-color: var(--border-strong);
-  box-shadow: var(--shadow-md);
-}
-
-.task-title {
-  font-size: 14px;
-  font-weight: 600;
-  line-height: 1.4;
-  overflow-wrap: anywhere;
-}
-
-.is-done .task-title {
-  color: var(--text-muted);
-  text-decoration: line-through;
-}
-
-.task-desc {
-  margin-top: var(--space-1);
-  color: var(--text-muted);
-  font-size: 13px;
-  line-height: 1.5;
-  /* 描述最多两行，超出省略 */
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.task-meta {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-2);
-  margin-top: var(--space-2);
-  font-size: 12px;
-}
-
-.badge {
-  padding: 1px 8px;
-  border-radius: 999px;
-  font-weight: 500;
-}
-
-.priority-high {
-  color: var(--priority-high);
-  background: var(--danger-soft);
-}
-
-.priority-medium {
-  color: var(--priority-medium);
-  background: rgba(181, 71, 8, 0.12);
-}
-
-.priority-low {
-  color: var(--priority-low);
-  background: var(--surface-muted);
-}
-
-.due {
-  color: var(--text-muted);
-}
-
-.due.overdue {
-  color: var(--danger);
-  font-weight: 600;
-}
-
-.done-at {
-  color: var(--success);
-}
-
-.tag-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-1);
-  margin-top: var(--space-2);
-}
-
-.tag {
-  padding: 0 6px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  color: var(--text-muted);
-  font-size: 11px;
-}
-
-.task-actions {
-  display: flex;
-  gap: var(--space-2);
-  margin-top: var(--space-3);
-  padding-top: var(--space-2);
-  border-top: 1px solid var(--border);
-}
-
-.action {
-  padding: 2px 8px;
-  border: 1px solid transparent;
-  border-radius: var(--radius-sm);
-  background: transparent;
-  color: var(--text-muted);
-  font-size: 12px;
-}
-
-.action:hover {
-  background: var(--surface-hover);
-  color: var(--text);
-}
-
-.action-danger:hover {
-  color: var(--danger);
-  background: var(--danger-soft);
-}
-</style>
+<style scoped src="./task-card.css"></style>

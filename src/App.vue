@@ -48,6 +48,13 @@ provide(DRAG_KEY, drag)
 
 const { handleMove } = useKeyboardMove({ columns, moveTask, notify: pushToast })
 
+// 卡片上的“移动到”下拉：触屏与筛选状态下的移动路径
+function handleStatusChange({ id, status }) {
+  const targetColumn = columns.value.find((column) => column.value === status)
+  moveTask(id, status, targetColumn ? targetColumn.tasks.length : 0)
+  pushToast('已移动到「' + STATUS_LABELS[status] + '」')
+}
+
 function openCreate() {
   editingTask.value = null
   formOpen.value = true
@@ -153,9 +160,11 @@ watch(saveStatus, (status) => {
         :key="column.value"
         :column="column"
         :draggable="!filterActive"
+        :filtered="filterActive"
         @edit="openEdit"
         @remove="askDelete"
         @move="handleMove"
+        @status="handleStatusChange"
       />
     </main>
 

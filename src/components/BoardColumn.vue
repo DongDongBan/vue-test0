@@ -12,9 +12,14 @@ const props = defineProps({
     type: Boolean,
     default: true,
   },
+  // 当前是否处于筛选状态，决定空状态的文案
+  filtered: {
+    type: Boolean,
+    default: false,
+  },
 })
 
-const emit = defineEmits(['edit', 'remove', 'move'])
+const emit = defineEmits(['edit', 'remove', 'move', 'status'])
 
 const {
   draggingId,
@@ -37,7 +42,7 @@ const DIRECTIONS = {
 
 // 键盘等价操作：Enter 编辑、Delete 删除、Ctrl/Command + 方向键移动
 function onCardKeydown(event, task) {
-  // 焦点在卡片内部按钮上时，让按钮自己处理
+  // 焦点在卡片内部按钮/下拉上时，让控件自己处理
   if (event.target !== event.currentTarget) return
 
   if (event.key === 'Enter') {
@@ -98,96 +103,14 @@ function onCardKeydown(event, task) {
           :task="task"
           @edit="emit('edit', $event)"
           @remove="emit('remove', $event)"
+          @status="emit('status', { id: task.id, status: $event })"
         />
       </li>
     </ul>
-    <p v-else class="column-empty">暂无任务</p>
+    <p v-else class="column-empty">
+      {{ filtered ? '没有匹配的任务' : '暂无任务' }}
+    </p>
   </section>
 </template>
 
-<style scoped>
-.column {
-  min-height: 240px;
-  padding: var(--space-3);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  background: var(--surface-muted);
-  transition: border-color var(--duration) var(--easing);
-}
-
-.column.is-drop-target {
-  border-color: var(--primary);
-}
-
-.column-header {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  padding: 0 var(--space-1) var(--space-3);
-}
-
-.column-title {
-  font-size: 15px;
-  font-weight: 600;
-}
-
-.column-count {
-  min-width: 20px;
-  padding: 0 6px;
-  border-radius: 999px;
-  background: var(--surface);
-  color: var(--text-muted);
-  font-size: 12px;
-  text-align: center;
-}
-
-.task-list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-}
-
-.task-item {
-  position: relative;
-  border-radius: var(--radius-md);
-}
-
-/* 键盘聚焦时给出明确的位置感（全局 :focus-visible 负责描边） */
-.task-item:focus-visible {
-  outline-offset: 3px;
-}
-
-/* 拖动中的卡片半透明，留出“它被拿起来了”的视觉暗示 */
-.task-item.is-dragging {
-  opacity: 0.45;
-}
-
-/* 落点指示线：画在卡片上方/下方的间隙里 */
-.task-item.is-drop-before::before,
-.task-item.is-drop-after::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  right: 0;
-  height: 2px;
-  border-radius: 1px;
-  background: var(--primary);
-}
-
-.task-item.is-drop-before::before {
-  top: calc(var(--space-2) / -2 - 1px);
-}
-
-.task-item.is-drop-after::after {
-  bottom: calc(var(--space-2) / -2 - 1px);
-}
-
-.column-empty {
-  padding: var(--space-4);
-  border: 1px dashed var(--border-strong);
-  border-radius: var(--radius-md);
-  color: var(--text-muted);
-  font-size: 13px;
-  text-align: center;
-}
-</style>
+<style scoped src="./board-column.css"></style>
