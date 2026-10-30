@@ -1,23 +1,26 @@
-﻿/* ============================================================
-   璁捐浠ょ墝锛圖esign Tokens锛?   鎵€鏈夐鑹层€侀棿璺濄€佸渾瑙掋€侀槾褰便€佸瓧浣撶殑鍞竴鏉ユ簮銆?   缁勪欢閲屽彧鍏佽浣跨敤 var(--xxx)锛屼笉鍐欐鍏蜂綋鏁板€硷紝渚夸簬缁熶竴鎹㈣偆銆?   ============================================================ */
+/* ============================================================
+   设计令牌（Design Tokens）
+   所有颜色、间距、圆角、阴影、字体的唯一来源。
+   组件里只允许使用 var(--xxx)，不写死具体数值，便于统一换肤。
+   ============================================================ */
 :root {
-  /* color-scheme 璁╁師鐢熸帶浠讹紙婊氬姩鏉°€佽緭鍏ユ锛夎窡闅忔槑鏆椾富棰?*/
+  /* color-scheme 让原生控件（滚动条、输入框）跟随明暗主题 */
   color-scheme: light dark;
 
-  /* 鑳屾櫙涓庤〃闈細鐢ㄥ眰娆★紙bg < surface-muted < surface锛夎〃杈惧眰绾?*/
+  /* 背景与表面：用层次（bg < surface-muted < surface）表达层级 */
   --bg: #f5f6f8;
   --surface: #ffffff;
   --surface-muted: #f0f2f5;
   --surface-hover: #e9edf2;
 
-  /* 鏂囧瓧涓庤竟妗?*/
+  /* 文字与边框 */
   --text: #1f2933;
   --text-muted: #667085;
   --text-inverse: #ffffff;
   --border: #e1e5ea;
   --border-strong: #c9d0d8;
 
-  /* 鍝佺墝鑹蹭笌璇箟鑹诧細璇箟鑹插彧琛ㄨ揪鍚箟锛堝嵄闄?璀﹀憡/鎴愬姛锛夛紝涓嶇粦瀹氬叿浣撶敤閫?*/
+  /* 品牌色与语义色：语义色只表达含义（危险/警告/成功），不绑定具体用途 */
   --primary: #2f6fed;
   --primary-hover: #1f5ad0;
   --primary-soft: rgba(47, 111, 237, 0.12);
@@ -27,12 +30,12 @@
   --warning-soft: rgba(181, 71, 8, 0.12);
   --success: #067647;
 
-  /* 浼樺厛绾ц壊涓庤涔夎壊鍒绘剰鍒嗗紑锛氫互鍚庤皟浼樺厛绾ч厤鑹蹭笉浼氬奖鍝嶉敊璇彁绀?*/
+  /* 优先级色与语义色刻意分开：以后调优先级配色不会影响错误提示 */
   --priority-high: #d92d20;
   --priority-medium: #b54708;
   --priority-low: #475467;
 
-  /* 鍦嗚涓庨棿璺濓細4 鐨勫€嶆暟锛屼繚璇佽妭濂忎竴鑷?*/
+  /* 圆角与间距：4 的倍数，保证节奏一致 */
   --radius-sm: 4px;
   --radius-md: 8px;
   --radius-lg: 12px;
@@ -43,20 +46,20 @@
   --space-5: 24px;
   --space-6: 32px;
 
-  /* 闃村奖涓庡姩鏁?*/
+  /* 阴影与动效 */
   --shadow-sm: 0 1px 2px rgba(16, 24, 40, 0.06);
   --shadow-md: 0 4px 12px rgba(16, 24, 40, 0.1);
   --shadow-lg: 0 12px 32px rgba(16, 24, 40, 0.16);
   --duration: 150ms;
   --easing: ease;
 
-  /* 瀛椾綋 */
+  /* 字体 */
   --font-sans: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
     'Helvetica Neue', 'PingFang SC', 'Microsoft YaHei', sans-serif;
   --font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
 }
 
-/* 鏆楄壊妯″紡鍙噸鍐欌€滈鑹测€濈被浠ょ墝锛屽昂瀵搞€佸瓧浣撱€佸姩鏁堜繚鎸佷笉鍙?*/
+/* 暗色模式只重写“颜色”类令牌，尺寸、字体、动效保持不变 */
 @media (prefers-color-scheme: dark) {
   :root {
     --bg: #0f1115;
