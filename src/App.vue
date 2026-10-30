@@ -1,9 +1,18 @@
 ﻿<script setup>
+import { ref } from 'vue'
 import BoardColumn from './components/BoardColumn.vue'
+import TaskFormDialog from './components/TaskFormDialog.vue'
 import { useBoard } from './composables/useBoard.js'
 
 // 状态层只在这里创建一次，向下通过 props 传递
-const { columns, stats } = useBoard()
+const { columns, stats, addTask } = useBoard()
+
+const formOpen = ref(false)
+
+function handleCreate(payload) {
+  addTask(payload)
+  formOpen.value = false
+}
 </script>
 
 <template>
@@ -17,12 +26,18 @@ const { columns, stats } = useBoard()
           <span v-if="stats.overdue > 0"> · 逾期 {{ stats.overdue }}</span>
         </p>
       </div>
-      <button class="btn-create" type="button">新建任务</button>
+      <button class="btn-create" type="button" @click="formOpen = true">新建任务</button>
     </header>
 
     <main class="board">
       <BoardColumn v-for="column in columns" :key="column.value" :column="column" />
     </main>
+
+    <TaskFormDialog
+      v-if="formOpen"
+      @submit="handleCreate"
+      @close="formOpen = false"
+    />
   </div>
 </template>
 
