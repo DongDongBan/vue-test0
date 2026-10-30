@@ -1,6 +1,5 @@
 ﻿<script setup>
-import { inject, ref } from 'vue'
-import { DRAG_KEY, toMoveIndex } from '../composables/useDragDrop.js'
+import { useColumnDrag } from '../composables/useColumnDrag.js'
 import TaskCard from './TaskCard.vue'
 
 const props = defineProps({
@@ -15,59 +14,50 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['edit', 'remove'])
+const emit = defineEmits(['edit', 'remove', 'move'])
 
-// 拖拽是跨列共享的交互状态，用 provide/inject 注入，避免逐层传回调
-const drag = inject(DRAG_KEY, null)
-const draggingId = drag ? drag.draggingId : ref(null)
-const target = drag ? drag.target : ref({ status: null, slot: null })
-const isDragging = drag ? drag.isDragging : ref(false)
+const {
+  draggingId,
+  target,
+  isDragging,
+  onDragStart,
+  onDragEnd,
+  onCardDragOver,
+  onColumnDragOver,
+  onDrop,
+  isSlot,
+} = useColumnDrag(props)
 
-function onDragStart(event, task) {
-  if (!props.draggable || !drag) {
+const DIRECTIONS = {
+  ArrowLeft: 'left',
+  ArrowRight: 'right',
+  ArrowUp: 'up',
+  ArrowDown: 'down',
+}
+
+// 键盘等价操作：Enter 编辑、Delete 删除、Ctrl/Command + 方向键移动
+function onCardKeydown(event, task) {
+  // 焦点在卡片内部按钮上时，让按钮自己处理
+  if (event.target !== event.currentTarget) return
+
+  if (event.key === 'Enter') {
     event.preventDefault()
+    emit('edit', task)
     return
   }
-  drag.start(task, event)
-}
 
-function onDragEnd() {
-  drag?.end()
-}
-
-function onCardDragOver(event, index) {
-  if (!isDragging.value || !drag) return
-  const rect = event.currentTarget.getBoundingClientRect()
-  const after = event.clientY > rect.top + rect.height / 2
-  drag.hover(props.column.value, index + (after ? 1 : 0))
-}
-
-function onColumnDragOver(event) {
-  if (!isDragging.value || !drag) return
-  const items = event.currentTarget.querySelectorAll('.task-item')
-  if (items.length === 0) {
-    drag.hover(props.column.value, 0)
+  if (event.key === 'Delete') {
+    event.preventDefault()
+    emit('remove', task)
     return
   }
-  const last = items[items.length - 1].getBoundingClientRect()
-  if (event.clientY > last.bottom) {
-    drag.hover(props.column.value, props.column.tasks.length)
-  }
-}
 
-function onDrop() {
-  if (!drag) return
-  const slot = target.value.slot ?? props.column.tasks.length
-  const fromIndex = props.column.tasks.findIndex((task) => task.id === draggingId.value)
-  drag.drop(props.column.value, toMoveIndex(fromIndex, slot))
-}
+  const modifier = event.ctrlKey || event.metaKey
+  const direction = DIRECTIONS[event.key]
+  if (!modifier || !direction) return
 
-function isSlot(index) {
-  return (
-    isDragging.value &&
-    target.value.status === props.column.value &&
-    target.value.slot === index
-  )
+  event.preventDefault()
+  emit('move', { id: task.id, direction })
 }
 </script>
 
@@ -97,6 +87,9 @@ function isSlot(index) {
           'is-drop-after': isSlot(column.tasks.length) && index === column.tasks.length - 1,
         }"
         :draggable="draggable"
+        tabindex="0"
+        :data-task-id="task.id"
+        @keydown="onCardKeydown($event, task)"
         @dragstart="onDragStart($event, task)"
         @dragend="onDragEnd"
         @dragover.prevent.stop="onCardDragOver($event, index)"
@@ -156,6 +149,12 @@ function isSlot(index) {
 
 .task-item {
   position: relative;
+  border-radius: var(--radius-md);
+}
+
+/* 键盘聚焦时给出明确的位置感（全局 :focus-visible 负责描边） */
+.task-item:focus-visible {
+  outline-offset: 3px;
 }
 
 /* 拖动中的卡片半透明，留出“它被拿起来了”的视觉暗示 */
