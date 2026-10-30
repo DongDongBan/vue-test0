@@ -8,6 +8,9 @@ defineProps({
     required: true,
   },
 })
+
+// 只做转发：列不关心编辑/删除怎么实现
+const emit = defineEmits(['edit', 'remove'])
 </script>
 
 <template>
@@ -21,7 +24,11 @@ defineProps({
 
     <ul v-if="column.tasks.length > 0" class="task-list">
       <li v-for="task in column.tasks" :key="task.id" class="task-item">
-        <TaskCard :task="task" />
+        <TaskCard
+          :task="task"
+          @edit="emit('edit', $event)"
+          @remove="emit('remove', $event)"
+        />
       </li>
     </ul>
     <p v-else class="column-empty">暂无任务</p>

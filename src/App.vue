@@ -1,18 +1,82 @@
 ﻿<script setup>
-import { ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import BoardColumn from './components/BoardColumn.vue'
+import ConfirmDialog from './components/ConfirmDialog.vue'
 import TaskFormDialog from './components/TaskFormDialog.vue'
+import ToastHost from './components/ToastHost.vue'
 import { useBoard } from './composables/useBoard.js'
 
-// 状态层只在这里创建一次，向下通过 props 传递
-const { columns, stats, addTask } = useBoard()
+const { columns, stats, loadStatus, saveStatus, addTask, updateTask, removeTask } = useBoard()
 
 const formOpen = ref(false)
+const editingTask = ref(null)
+const pendingDelete = ref(null)
+const toasts = ref([])
+let toastId = 0
 
-function handleCreate(payload) {
-  addTask(payload)
-  formOpen.value = false
+const deleteMessage = computed(() =>
+  pendingDelete.value ? '确定删除「' + pendingDelete.value.title + '」吗？此操作不可撤销。' : '',
+)
+
+function pushToast(message) {
+  const id = ++toastId
+  toasts.value = [...toasts.value, { id, message }]
+  setTimeout(() => dismissToast(id), 3000)
 }
+
+function dismissToast(id) {
+  toasts.value = toasts.value.filter((toast) => toast.id !== id)
+}
+
+function openCreate() {
+  editingTask.value = null
+  formOpen.value = true
+}
+
+function openEdit(task) {
+  editingTask.value = task
+  formOpen.value = true
+}
+
+function closeForm() {
+  formOpen.value = false
+  editingTask.value = null
+}
+
+function handleSubmit(payload) {
+  if (editingTask.value) {
+    updateTask(editingTask.value.id, payload)
+    pushToast('修改已保存')
+  } else {
+    addTask(payload)
+    pushToast('任务已创建')
+  }
+  closeForm()
+}
+
+function askDelete(task) {
+  pendingDelete.value = task
+}
+
+function confirmDelete() {
+  if (!pendingDelete.value) return
+  removeTask(pendingDelete.value.id)
+  pendingDelete.value = null
+  pushToast('任务已删除')
+}
+
+// 读取异常只在启动时提示一次
+onMounted(() => {
+  if (loadStatus.value === 'corrupted') pushToast('本地数据读取失败，已重置为空看板')
+  if (loadStatus.value === 'partial') pushToast('部分任务数据无法读取，已忽略')
+  if (loadStatus.value === 'unavailable') pushToast('浏览器存储不可用，本次修改不会被保存')
+})
+
+// 写入异常随时可能发生（例如配额满）
+watch(saveStatus, (status) => {
+  if (status === 'quota') pushToast('存储空间不足，本次修改未保存')
+  if (status === 'unavailable') pushToast('存储不可用，本次修改未保存')
+})
 </script>
 
 <template>
@@ -26,18 +90,37 @@ function handleCreate(payload) {
           <span v-if="stats.overdue > 0"> · 逾期 {{ stats.overdue }}</span>
         </p>
       </div>
-      <button class="btn-create" type="button" @click="formOpen = true">新建任务</button>
+      <button class="btn-create" type="button" @click="openCreate">新建任务</button>
     </header>
 
     <main class="board">
-      <BoardColumn v-for="column in columns" :key="column.value" :column="column" />
+      <BoardColumn
+        v-for="column in columns"
+        :key="column.value"
+        :column="column"
+        @edit="openEdit"
+        @remove="askDelete"
+      />
     </main>
 
     <TaskFormDialog
       v-if="formOpen"
-      @submit="handleCreate"
-      @close="formOpen = false"
+      :task="editingTask"
+      @submit="handleSubmit"
+      @close="closeForm"
     />
+
+    <ConfirmDialog
+      v-if="pendingDelete"
+      title="删除任务"
+      :message="deleteMessage"
+      confirm-label="删除"
+      danger
+      @confirm="confirmDelete"
+      @cancel="pendingDelete = null"
+    />
+
+    <ToastHost :toasts="toasts" @dismiss="dismissToast" />
   </div>
 </template>
 
