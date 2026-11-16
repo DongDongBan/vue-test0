@@ -92,10 +92,14 @@ function confirmDelete() {
   pushToast('任务已删除')
 }
 
-// 全局快捷键：无输入焦点时按 N 新建
+// 全局快捷键：无输入焦点、且没有弹窗打开时按 N 新建
 function onGlobalKeydown(event) {
   if (event.key.toLowerCase() !== 'n') return
   if (event.ctrlKey || event.metaKey || event.altKey) return
+
+  // 有模态框（表单 / 删除确认）打开时，全局快捷键一律不生效：
+  // 否则 N 会调用 openCreate 把 editingTask 置空，正在编辑的表单会被当成新建提交
+  if (formOpen.value || pendingDelete.value) return
 
   const target = event.target
   const tag = target?.tagName
